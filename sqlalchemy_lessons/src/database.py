@@ -1,14 +1,13 @@
-import asyncio
+# import asyncio
 
 from config import settings
-from models import metadata_obj
-from sqlalchemy import URL, create_engine, insert, text
+from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import (
-    AsyncConnection,
+    # AsyncConnection,
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 # Подключение к БД синхронное
 sync_engine = create_engine(

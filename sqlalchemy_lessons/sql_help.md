@@ -1,18 +1,3 @@
-## 📋 Как создать файл:
-
-1. **Скопируй** весь текст ниже (от `# PostgreSQL + SQLAlchemy Шпаргалка` до конца)
-2. **Создай файл** в своём проекте:
-   ```bash
-   nano psql_sqlalchemy.md
-   ```
-3. **Вставь** содержимое (`Ctrl+Shift+V` в терминале или `Ctrl+V` в nano)
-4. **Сохрани**: `Ctrl+O` → `Enter` → `Ctrl+X`
-
----
-
-Вот полное содержимое для файла **psql_sqlalchemy.md**:
-
-```markdown
 # PostgreSQL + SQLAlchemy Шпаргалка
 
 ## 🔹 1. Управление сервисом PostgreSQL
@@ -125,10 +110,10 @@ host    all       all   127.0.0.1/32    md5        # TCP localhost с парол
 
 | Команда | Описание |
 |---------|----------|
-| `ss -tlnp | grep 5432` | Проверить, слушает ли порт 5432 |
+| `ss -tlnp \| grep 5432` | Проверить, слушает ли порт 5432 |
 | `sudo tail -n 50 /var/log/postgresql/postgresql-17-main.log` | Последние 50 строк лога |
 | `sudo journalctl -xeu postgresql@17-main.service` | Логи systemd |
-| `ps aux | grep postgres` | Показать процессы PostgreSQL |
+| `ps aux \| grep postgres` | Показать процессы PostgreSQL |
 | `sudo pg_ctlcluster 17 main status` | Детальный статус кластера |
 
 ---
