@@ -2,8 +2,9 @@
 
 # from argparse import ArgumentParser
 
-from models import Gachi, User, engine
 from sqlalchemy.orm import sessionmaker
+
+from sqlalchemy_lessons.other.models import User, engine
 
 # parser = ArgumentParser()
 # parser.add_argument("--name", type=str, required=True)
