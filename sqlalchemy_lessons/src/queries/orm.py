@@ -6,11 +6,13 @@ from database import (
 )
 from models import Base, ResumeOrm, WorkersOrm, WorkLoad
 from sqlalchemy import Integer, and_, cast, func, insert, select, update
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, joinedload, selectinload
 
 
 class SyncOrm:
     def clear_db():
+        # ResumeOrm.__table__.drop(sync_engine, checkfirst=True)
+        # WorkersOrm.__table__.drop(sync_engine, checkfirst=True)
         Base.metadata.drop_all(sync_engine)
 
     @staticmethod
@@ -103,6 +105,51 @@ class SyncOrm:
 
             res_el0 = result[0]
             print(res_el0.avg_comp)
+
+    # При lazy загрузке проблема n + 1 запросов
+    @staticmethod
+    def select_workers_with_lazy_relashionship():
+        with sync_session_factory() as session:
+            query = select(WorkersOrm)
+            res = session.execute(query).scalars().all()
+
+            worker1 = res[0].resumes
+            print(worker1)
+
+            worker2 = res[1].resumes
+            print(worker2)
+
+    @staticmethod
+    def select_workers_with_joined_relashionship():
+        """
+        Для случаев, когда у нас отношение one to many | one to many joined не очень подходит, потому что
+        мы выгружаем много дубликатов, он подходит когда связь many to one | one to one.
+        """
+        with sync_session_factory() as session:
+            query = select(WorkersOrm).options(joinedload(WorkersOrm.resumes))
+            res = session.execute(query).unique().scalars().all()
+
+            worker1 = res[0].resumes
+            print(worker1)
+
+            worker2 = res[1].resumes
+            print(worker2)
+
+    @staticmethod
+    def select_workers_with_selectin_relashionship():
+        """
+        Для случаев, когда у нас отношение many to many | one to many нужно использовать selectinload, потому что
+        мы сначала выгружаем всех уникальные значения, а затем выбираем из всех резюме эти уникальные
+        """
+        with sync_session_factory() as session:
+            query = select(WorkersOrm).options(selectinload(WorkersOrm.resumes))
+            res = session.execute(query).scalars().all()
+
+            worker1 = res[0].resumes
+            print(worker1)
+
+            worker2 = res[1].resumes
+            print(worker2)
 
 
 class AsyncOrm:

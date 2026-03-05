@@ -7,11 +7,11 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 from queries.core import SyncCore
 from queries.orm import AsyncOrm, SyncOrm
 
-# SyncCore.create_tables()
-# SyncCore.insert_workers()
-# SyncCore.select_workers()
-# SyncCore.update_worker(1, "Igor Kuchkov")
-# SyncCore.select_workers()
+
+def sync_start():
+    SyncOrm.create_tables()
+    SyncOrm.insert_data()
+    SyncOrm.select_workers_with_selectin_relashionship()
 
 
 async def start_script():
@@ -21,4 +21,5 @@ async def start_script():
 
 
 if __name__ == "__main__":
-    asyncio.run(start_script())
+    # asyncio.run(start_script())
+    sync_start()
