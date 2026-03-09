@@ -6,7 +6,7 @@ from database import (
 )
 from models import Base, ResumeOrm, WorkersOrm, WorkLoad
 from sqlalchemy import Integer, and_, cast, func, insert, select, update
-from sqlalchemy.orm import aliased, joinedload, selectinload
+from sqlalchemy.orm import aliased, contains_eager, joinedload, selectinload
 
 
 class SyncOrm:
@@ -22,18 +22,24 @@ class SyncOrm:
         sync_engine.echo = True
 
     @staticmethod
-    def insert_data():
-        data = [
-            {"username": "Steve Rambo"},
-            {"username": "Billy Harrington"},
-            {"username": "Van Darkholm"},
-            {"username": "Terry Crews"},
+    def insert_data_in_WorkersOrm():
+        workers_data = [
+            {"username": "Ricardo Milos"},
+            {"username": "Dmitry Volkov"},
+            {"username": "Alexey Petrov"},
+            {"username": "Maria Sokolova"},
+            {"username": "Ivan Ivanov"},
+            {"username": "Keanu Reeves"},
+            {"username": "Ryan Gosling"},
+            {"username": "Christian Bale"},
+            {"username": "Benedict Cumberbatch"},
+            {"username": "Tom Hardy"},
         ]
         with sync_session_factory() as session:
             # user_steve_rambo = WorkersOrm(username="Steve Rambo")
             # user_volk = WorkersOrm(username="Sery Volk")
             # session.add_all([user_steve_rambo, user_volk])
-            session.add_all([WorkersOrm(**userdata) for userdata in data])
+            session.add_all([WorkersOrm(**userdata) for userdata in workers_data])
 
             session.flush()  # отправляет изнения в БД, не завершая транзакцию
             session.commit()
@@ -60,15 +66,26 @@ class SyncOrm:
             session.commit()
 
     @staticmethod
-    def insert_4_row_in_ResumeOrm():
-        data = [
-            {"title": "Python Junior Developer", "compensation": 50000, "workload": WorkLoad.fulltime, "worker_id": 4},
-            {"title": "Python Developer", "compensation": 150000, "workload": WorkLoad.fulltime, "worker_id": 4},
-            {"title": "Python Data Engineer", "compensation": 250000, "workload": WorkLoad.parttime, "worker_id": 3},
-            {"title": "Data Scientist", "compensation": 300000, "workload": WorkLoad.fulltime, "worker_id": 2},
+    def insert_rows_in_ResumeOrm():
+        resumes_data = [
+            {"title": "DevOps Engineer", "compensation": 280000, "workload": WorkLoad.fulltime, "worker_id": 5},
+            {"title": "Backend Developer (Go)", "compensation": 220000, "workload": WorkLoad.fulltime, "worker_id": 6},
+            {"title": "Frontend Developer (React)", "compensation": 180000, "workload": WorkLoad.parttime, "worker_id": 7},
+            {"title": "QA Automation Engineer", "compensation": 140000, "workload": WorkLoad.fulltime, "worker_id": 8},
+            {"title": "ML Engineer", "compensation": 350000, "workload": WorkLoad.fulltime, "worker_id": 9},
+            {"title": "Cybersecurity Specialist", "compensation": 260000, "workload": WorkLoad.fulltime, "worker_id": 10},
+            {"title": "Product Manager", "compensation": 310000, "workload": WorkLoad.fulltime, "worker_id": 5},
+            {"title": "iOS Developer", "compensation": 240000, "workload": WorkLoad.parttime, "worker_id": 10},
+            {"title": "Android Developer", "compensation": 230000, "workload": WorkLoad.fulltime, "worker_id": 1},
+            {"title": "System Architect", "compensation": 450000, "workload": WorkLoad.fulltime, "worker_id": 2},
+            {"title": "Data Engineer", "compensation": 270000, "workload": WorkLoad.fulltime, "worker_id": 3},
+            {"title": "UI/UX Designer", "compensation": 160000, "workload": WorkLoad.parttime, "worker_id": 4},
+            {"title": "SRE Engineer", "compensation": 290000, "workload": WorkLoad.fulltime, "worker_id": 6},
+            {"title": "Fullstack Developer", "compensation": 210000, "workload": WorkLoad.fulltime, "worker_id": 7},
+            {"title": "Technical Writer", "compensation": 120000, "workload": WorkLoad.parttime, "worker_id": 9},
         ]
         with sync_session_factory() as session:
-            session.add_all([ResumeOrm(**userdata) for userdata in data])
+            session.add_all([ResumeOrm(**userdata) for userdata in resumes_data])
             session.flush()
             session.commit()
 
@@ -122,7 +139,7 @@ class SyncOrm:
     @staticmethod
     def select_workers_with_joined_relashionship():
         """
-        Для случаев, когда у нас отношение one to many | one to many joined не очень подходит, потому что
+        Для случаев, когда у нас отношение one to many | many to one joined не очень подходит, потому что
         мы выгружаем много дубликатов, он подходит когда связь many to one | one to one.
         """
         with sync_session_factory() as session:
@@ -150,6 +167,20 @@ class SyncOrm:
 
             worker2 = res[1].resumes
             print(worker2)
+
+    @staticmethod
+    def select_workers_with_condition_relationship():
+        with sync_session_factory() as session:
+            q = select(WorkersOrm).options(selectinload(WorkersOrm.resumes_parttime))
+            res = session.execute(q).scalars().all()
+            print(res)
+
+    @staticmethod
+    def select_workers_with_condition_relationship_contains_eager():
+        with sync_session_factory() as session:
+            q = select(WorkersOrm).join(WorkersOrm.resumes).options(contains_eager(WorkersOrm.resumes)).filter(ResumeOrm.workload == "parttime")
+            res = session.execute(q).unique().scalars().all()
+            print(res)
 
 
 class AsyncOrm:

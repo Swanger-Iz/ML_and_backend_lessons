@@ -10,8 +10,10 @@ from queries.orm import AsyncOrm, SyncOrm
 
 def sync_start():
     SyncOrm.create_tables()
-    SyncOrm.insert_data()
-    SyncOrm.select_workers_with_selectin_relashionship()
+    SyncOrm.insert_data_in_WorkersOrm()
+    SyncOrm.insert_rows_in_ResumeOrm()
+    # SyncOrm.select_workers_with_selectin_relashionship()
+    SyncOrm.select_workers_with_condition_relationship()
 
 
 async def start_script():

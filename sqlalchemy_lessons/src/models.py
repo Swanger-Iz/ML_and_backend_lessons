@@ -2,7 +2,17 @@ import datetime
 import enum
 from typing import Annotated, Optional
 
-from sqlalchemy import Column, ForeignKey, Integer, MetaData, String, Table, text
+from sqlalchemy import (
+    CheckConstraint,
+    Column,
+    ForeignKey,
+    Index,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    text,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Кастомный тип данных
@@ -19,8 +29,17 @@ str_256 = Annotated[str, 256]
 class Base(DeclarativeBase):
     type_annotation_map = {str_256: String(256)}
 
+    repr_cols_num = 3
+    repr_cols = tuple()
+
     def __repr__(self):
-        cols = [f"{col}={getattr(self, col)}" for col in self.__table__.columns.keys()]
+        """Relathionships не используются в repr(), т.к. могут привести к неожиданным подгрузкам"""
+
+        cols = []
+        for idx, col in enumerate(self.__table__.columns.keys()):
+            if col in self.repr_cols or idx < self.repr_cols_num:
+                cols.append(f"{col}={getattr(self, col)}")
+
         return f"<{self.__class__.__name__} {','.join(cols)}>"
 
 
@@ -35,7 +54,14 @@ class WorkersOrm(Base):
     id: Mapped[intpk]
     username: Mapped[str]
 
-    resumes: Mapped[list["ResumeOrm"]] = relationship()
+    resumes: Mapped[list["ResumeOrm"]] = relationship(back_populates="worker")  # backref="worker" устаревший параметр
+
+    resumes_parttime: Mapped[list["ResumeOrm"]] = relationship(
+        back_populates="worker",
+        primaryjoin="and_(WorkersOrm.id == ResumeOrm.worker_id, ResumeOrm.workload =='parttime')",
+        order_by="ResumesOrm.id.desc()",
+        lazy="selectin",
+    )
 
 
 class ResumeOrm(Base):
@@ -50,7 +76,19 @@ class ResumeOrm(Base):
     created_at: Mapped[created_at_ct]
     updated_at: Mapped[updated_at_ct]
 
-    worker: Mapped["WorkersOrm"] = relationship()
+    worker: Mapped["WorkersOrm"] = relationship(back_populates="resumes")
+
+    repr_cols_num = 4
+    repr_cols = ("created_at",)
+
+    __table_args__ = (
+        # Primary keys можно создать также тут, но рекомендуется возле поля
+        Index(
+            "title_index",
+            "title",
+        ),
+        CheckConstraint("compensation > 0", name="check_compensation_positive"),
+    )
 
 
 # Тут будет храниться информация о всех созданных таблицах на стороне приложения
