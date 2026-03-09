@@ -69,7 +69,7 @@ class ResumeOrm(Base):
 
     id: Mapped[intpk]
     title: Mapped[str_256]
-    compensation: Mapped[Optional[int]]
+    compensation: Mapped[int]
     workload: Mapped[WorkLoad]
     worker_id: Mapped[int] = mapped_column(ForeignKey("workers.id", ondelete="CASCADE"))
     # server_default - данные на уровне СУБД | default - данные на уровне приложения python
