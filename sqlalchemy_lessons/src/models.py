@@ -59,7 +59,7 @@ class WorkersOrm(Base):
     resumes_parttime: Mapped[list["ResumeOrm"]] = relationship(
         back_populates="worker",
         primaryjoin="and_(WorkersOrm.id == ResumeOrm.worker_id, ResumeOrm.workload =='parttime')",
-        order_by="ResumesOrm.id.desc()",
+        order_by="ResumeOrm.id.desc()",
         lazy="selectin",
     )
 
