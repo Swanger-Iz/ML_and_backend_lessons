@@ -68,3 +68,4 @@ class Band(BandBase, table=True):
 
 # result = [BandBase(**b) for b in BANDS if b["genre"] == GenreChoises.POP_ROCK and len(b["albums"]) > 0]
 # print(result)
+# test
